@@ -2,6 +2,7 @@ import { ChatOpenAI } from '@langchain/openai';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseMessageLike } from '@langchain/core/messages';
+import z from 'zod';
 
 @Injectable()
 export class LlmService {
@@ -22,5 +23,13 @@ export class LlmService {
     const response = await this.chat.invoke(messages);
 
     return response.text;
+  }
+
+  async invokeStructured<T extends z.ZodType>(
+    messages: BaseMessageLike[],
+    schema: T
+  ): Promise<z.infer<T>> {
+    const structured = this.chat.withStructuredOutput(schema);
+    return structured.invoke(messages) as Promise<z.infer<T>>;
   }
 }
